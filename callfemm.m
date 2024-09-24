@@ -9,7 +9,7 @@ isOctave = exist('OCTAVE_VERSION', 'builtin') ~= 0;
 if (exist('actxserver') && isWindows)
 	
 	z=invoke(HandleToFEMM,'mlab2femm',x);
-	if (length(z)~=0)
+	if (~isempty(z))
     	if (z(1)=='e')
         	error(sprintf('FEMM returns:\n%s',z));
     	else
@@ -56,14 +56,29 @@ else
                     pause(0.001); 
                 end
             end
-            u=fopen(fid);
-            fclose(fid);
+            u=fgets(fid);
+            if (u==-1) 
+                fid = -1; % read again the file
+            end
         end
-        z=(u);
+        fclose(fid);
+        z = u;
+        if (length(z)~=0)
+    	    if (z(1)=='e')
+        	    % error(sprintf('FEMM returns:\n%s',z));
+                error = 1;
+                return
+    	    else
+        	    z=strrep(z,'I','i');
+       	 	    z=eval(z);
+    	    end
+	    end
+
+        % display(z)
+
     end
     pause(0.001);
     delete(ofile);
     %z=eval(u);
 
 end
-
